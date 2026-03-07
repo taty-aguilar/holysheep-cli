@@ -174,6 +174,11 @@ async function setup(options) {
         spinner.info(`${chalk.yellow(tool.name)} 需要手动配置:`)
         result.steps.forEach((s, i) => console.log(`  ${chalk.gray(i + 1 + '.')} ${s}`))
         results.push({ tool, status: 'manual' })
+      } else if (result.warning) {
+        if (result.envVars) Object.assign(envVarsToWrite, result.envVars)
+        spinner.warn(`${chalk.yellow(tool.name)} ${chalk.gray(result.file ? `→ ${result.file}` : '')}`)
+        console.log(chalk.yellow(`  ⚠️  ${result.warning}`))
+        results.push({ tool, status: 'warning', result })
       } else {
         if (result.envVars) Object.assign(envVarsToWrite, result.envVars)
         spinner.succeed(`${chalk.green(tool.name)} ${chalk.gray(result.file ? `→ ${result.file}` : '')}`)
