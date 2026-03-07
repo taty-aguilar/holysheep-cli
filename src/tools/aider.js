@@ -44,10 +44,11 @@ module.exports = {
     const content = readConfig()
     return content.includes('holysheep')
   },
-  configure(apiKey, baseUrlOpenAI) {
+  configure(apiKey, _baseUrlAnthropicNoV1, baseUrlOpenAI) {
     let content = readConfig()
     content = removeHsBlock(content)
-    // Aider 用 openai-api-base (不带 /v1 的后缀) 或完整带 /v1
+    // Aider 用 openai-api-base（OpenAI 兼容格式，带 /v1）
+    // model 格式: openai/<model-name> 表示使用 OpenAI 兼容接口
     const block = `
 # holysheep-cli managed — https://shop.holysheep.ai
 openai-api-key: ${apiKey}

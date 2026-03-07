@@ -40,7 +40,7 @@ Instead of manually editing config files and environment variables for each tool
 | [Codex CLI](https://github.com/openai/codex) | `npm i -g @openai/codex` | `~/.codex/config.toml` | ✅ Auto |
 | [Aider](https://aider.chat) | `pip install aider-install && aider-install` | `~/.aider.conf.yml` | ✅ Auto |
 | [Continue.dev](https://continue.dev) | VS Code marketplace | `~/.continue/config.yaml` | ✅ Auto |
-| [OpenCode](https://github.com/sst/opencode) | `npm i -g opencode-ai` | `~/.config/opencode/config.json` | ✅ Auto |
+| [OpenCode](https://opencode.ai) | `brew install anomalyco/tap/opencode` | `~/.config/opencode/opencode.json` | ✅ Auto |
 | [OpenClaw](https://github.com/iOfficeAI/AionUi) | Download from website | `~/.openclaw/settings.json` | ✅ Auto |
 | [Cursor](https://cursor.sh) | Download from website | GUI only (encrypted storage) | ⚠️ Manual |
 | [Gemini CLI](https://github.com/google-gemini/gemini-cli) | `npm i -g @google/gemini-cli` | Google protocol only | ❌ Not supported |
@@ -134,7 +134,7 @@ HolySheep 是面向中国开发者的 Claude/GPT/Gemini 官方 API 中转服务�
 | [Codex CLI](https://github.com/openai/codex) | `npm i -g @openai/codex` | `~/.codex/config.toml` | ✅ 自动 |
 | [Aider](https://aider.chat) | `pip install aider-install && aider-install` | `~/.aider.conf.yml` | ✅ 自动 |
 | [Continue.dev](https://continue.dev) | VS Code 插件市场 | `~/.continue/config.yaml` | ✅ 自动 |
-| [OpenCode](https://github.com/sst/opencode) | `npm i -g opencode-ai` | `~/.config/opencode/config.json` | ✅ 自动 |
+| [OpenCode](https://opencode.ai) | `brew install anomalyco/tap/opencode` | `~/.config/opencode/opencode.json` | ✅ 自动 |
 | [OpenClaw](https://github.com/iOfficeAI/AionUi) | 官网下载 | `~/.openclaw/settings.json` | ✅ 自动 |
 | [Cursor](https://cursor.sh) | 官网下载 | GUI 手动配置（加密存储） | ⚠️ 手动 |
 | [Gemini CLI](https://github.com/google-gemini/gemini-cli) | `npm i -g @google/gemini-cli` | 仅支持 Google 官方协议 | ❌ 不支持 |
