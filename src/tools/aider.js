@@ -38,10 +38,7 @@ module.exports = {
   name: 'Aider',
   id: 'aider',
   checkInstalled() {
-    try {
-      require('child_process').execSync('which aider', { stdio: 'ignore' })
-      return true
-    } catch { return false }
+    return require('../utils/which').commandExists('aider')
   },
   isConfigured() {
     const content = readConfig()

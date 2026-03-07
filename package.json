@@ -1,6 +1,6 @@
 {
   "name": "@simonyea/holysheep-cli",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "一键配置所有 AI 编程工具接入 HolySheep API — Claude Code / Codex / Gemini CLI / OpenCode / OpenClaw / Aider / Cursor",
   "keywords": [
     "claude",

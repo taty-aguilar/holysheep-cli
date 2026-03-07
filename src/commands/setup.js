@@ -36,10 +36,19 @@ async function tryAutoInstall(tool) {
 
   const spinner = ora(`正在安装 ${tool.name}...`).start()
   try {
-    spawnSync(info.cmd.split(' ')[0], info.cmd.split(' ').slice(1), {
+    const ret = spawnSync(info.cmd.split(' ')[0], info.cmd.split(' ').slice(1), {
       stdio: 'inherit',
       shell: true,
     })
+    if (ret.status !== 0) {
+      spinner.fail(`安装失败，请手动运行: ${chalk.cyan(info.cmd)}`)
+      return false
+    }
+    // Windows PATH 在当前进程内不会刷新，安装成功即认为可用
+    if (process.platform === 'win32') {
+      spinner.succeed(`${tool.name} 安装完成（请重新开一个终端窗口后运行 hs setup 完成配置）`)
+      return false  // 返回 false 跳过配置，让用户重开终端再来
+    }
     // 安装后重新检测
     if (tool.checkInstalled()) {
       spinner.succeed(`${tool.name} 安装成功`)

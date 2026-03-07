@@ -53,10 +53,7 @@ module.exports = {
   name: 'OpenCode',
   id: 'opencode',
   checkInstalled() {
-    try {
-      require('child_process').execSync('which opencode', { stdio: 'ignore' })
-      return true
-    } catch { return false }
+    return require('../utils/which').commandExists('opencode')
   },
   isConfigured() {
     const c = readConfig()

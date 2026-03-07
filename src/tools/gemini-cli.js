@@ -38,10 +38,7 @@ module.exports = {
   name: 'Gemini CLI',
   id: 'gemini-cli',
   checkInstalled() {
-    try {
-      require('child_process').execSync('which gemini', { stdio: 'ignore' })
-      return true
-    } catch { return false }
+    return require('../utils/which').commandExists('gemini')
   },
   isConfigured() {
     const s = readSettings()

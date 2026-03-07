@@ -44,15 +44,7 @@ module.exports = {
   name: 'Codex CLI',
   id: 'codex',
   checkInstalled() {
-    try {
-      require('child_process').execSync('codex --version', { stdio: 'ignore' })
-      return true
-    } catch {
-      try {
-        require('child_process').execSync('npx @openai/codex --version', { stdio: 'ignore' })
-        return true
-      } catch { return false }
-    }
+    return require('../utils/which').commandExists('codex')
   },
   isConfigured() {
     const c = readConfig()

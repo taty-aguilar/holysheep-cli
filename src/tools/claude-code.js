@@ -34,13 +34,7 @@ module.exports = {
   name: 'Claude Code',
   id: 'claude-code',
   checkInstalled() {
-    // 检查是否安装了 claude CLI
-    try {
-      require('child_process').execSync('which claude', { stdio: 'ignore' })
-      return true
-    } catch {
-      return false
-    }
+    return require('../utils/which').commandExists('claude')
   },
   isConfigured() {
     const s = readSettings()

@@ -44,10 +44,7 @@ module.exports = {
   name: 'OpenClaw',
   id: 'openclaw',
   checkInstalled() {
-    try {
-      require('child_process').execSync('which openclaw', { stdio: 'ignore' })
-      return true
-    } catch { return false }
+    return require('../utils/which').commandExists('openclaw')
   },
   isConfigured() {
     const file = getSettingsFile()
