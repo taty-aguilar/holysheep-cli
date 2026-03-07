@@ -1,54 +1,43 @@
 /**
- * OpenAI Codex CLI 适配器
- * 配置文件: ~/.codex/config.yaml 或 ~/.codex/config.json
- * 环境变量: OPENAI_API_KEY, OPENAI_BASE_URL
+ * Codex CLI 适配器 (@openai/codex v0.46+)
  *
- * Codex 支持 custom provider 配置:
- *   providers:
- *     - name: HolySheep
- *       baseURL: https://api.holysheep.ai/v1
- *       envKey: OPENAI_API_KEY
+ * 配置文件: ~/.codex/config.json（JSON 格式，不是 yaml）
  *
- * 注意: Codex 用 OpenAI 兼容格式，baseURL 需带 /v1
+ * 正确格式:
+ * {
+ *   "model": "claude-sonnet-4-5",
+ *   "provider": "holysheep",          // 指定默认 provider
+ *   "providers": {
+ *     "holysheep": {
+ *       "name": "HolySheep",
+ *       "baseURL": "https://api.holysheep.ai/v1",
+ *       "envKey": "OPENAI_API_KEY"
+ *     }
+ *   }
+ * }
+ *
+ * 环境变量: OPENAI_API_KEY（通过 envKey 指定）
+ * 注意: Codex 会优先使用账号登录，需要设置 provider 才能绕过
  */
-const fs = require('fs')
+const fs   = require('fs')
 const path = require('path')
-const os = require('os')
+const os   = require('os')
 
 const CONFIG_DIR  = path.join(os.homedir(), '.codex')
-const CONFIG_YAML = path.join(CONFIG_DIR, 'config.yaml')
-const CONFIG_JSON = path.join(CONFIG_DIR, 'config.json')
+const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json')
 
 function readConfig() {
   try {
-    if (fs.existsSync(CONFIG_YAML)) return { type: 'yaml', content: fs.readFileSync(CONFIG_YAML, 'utf8') }
-    if (fs.existsSync(CONFIG_JSON)) return { type: 'json', content: fs.readFileSync(CONFIG_JSON, 'utf8') }
+    if (fs.existsSync(CONFIG_FILE)) {
+      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'))
+    }
   } catch {}
-  return { type: 'yaml', content: '' }
+  return {}
 }
 
-function removeHolysheepProvider(yamlContent) {
-  // 简单移除已有的 holysheep provider 块
-  const lines = yamlContent.split('\n')
-  const result = []
-  let skip = false
-  for (const line of lines) {
-    if (line.includes('HolySheep') || line.includes('holysheep')) {
-      skip = true
-      // 也移除上一行的 `- name:` 前缀
-      if (result.length && result[result.length - 1].trim().startsWith('- name:')) {
-        result.pop()
-      }
-      continue
-    }
-    if (skip && (line.startsWith('  ') || line.trim() === '')) {
-      if (line.trim() === '') skip = false
-      continue
-    }
-    skip = false
-    result.push(line)
-  }
-  return result.join('\n')
+function writeConfig(data) {
+  if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true })
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(data, null, 2), 'utf8')
 }
 
 module.exports = {
@@ -56,62 +45,57 @@ module.exports = {
   id: 'codex',
   checkInstalled() {
     try {
-      require('child_process').execSync('which codex', { stdio: 'ignore' })
+      require('child_process').execSync('codex --version', { stdio: 'ignore' })
       return true
-    } catch { return false }
+    } catch {
+      try {
+        require('child_process').execSync('npx @openai/codex --version', { stdio: 'ignore' })
+        return true
+      } catch { return false }
+    }
   },
   isConfigured() {
-    const { content } = readConfig()
-    return content.includes('holysheep') || content.includes('HolySheep')
+    const c = readConfig()
+    return c.provider === 'holysheep' &&
+           !!c.providers?.holysheep?.baseURL?.includes('holysheep')
   },
-  configure(apiKey, baseUrlOpenAI) {
-    if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true })
+  configure(apiKey, _baseUrlAnthropicNoV1, baseUrlOpenAI) {
+    const config = readConfig()
 
-    // 生成 YAML 格式配置（Codex 官方推荐）
-    let content = ''
-    if (fs.existsSync(CONFIG_YAML)) {
-      content = fs.readFileSync(CONFIG_YAML, 'utf8')
-      content = removeHolysheepProvider(content)
+    // 设置 HolySheep 为默认 provider
+    config.provider = 'holysheep'
+    config.model    = config.model || 'claude-sonnet-4-5'
+
+    if (!config.providers) config.providers = {}
+    config.providers.holysheep = {
+      name:    'HolySheep',
+      baseURL: baseUrlOpenAI,   // https://api.holysheep.ai/v1
+      envKey:  'OPENAI_API_KEY',
     }
 
-    // 追加 holysheep provider + 设为默认 model provider
-    const providerBlock = `
-# HolySheep API — https://shop.holysheep.ai
-providers:
-  - name: HolySheep
-    baseURL: ${baseUrlOpenAI}
-    envKey: OPENAI_API_KEY
-model: claude-sonnet-4-5
-`
-    // 如果已有 providers 块，改为追加到列表
-    if (content.includes('providers:')) {
-      content = content.replace('providers:', `providers:\n  - name: HolySheep\n    baseURL: ${baseUrlOpenAI}\n    envKey: OPENAI_API_KEY`)
-    } else {
-      content += providerBlock
-    }
+    writeConfig(config)
 
-    fs.writeFileSync(CONFIG_YAML, content.trim() + '\n', 'utf8')
-
-    // 同时写入环境变量（Codex 通过 envKey 读取）
     return {
-      file: CONFIG_YAML,
-      hot: false,
+      file: CONFIG_FILE,
+      hot:  false,
+      // 需要同时设置环境变量，供 envKey 读取
       envVars: {
-        OPENAI_API_KEY: apiKey,
-        OPENAI_BASE_URL: baseUrlOpenAI,
+        OPENAI_API_KEY:   apiKey,
+        OPENAI_BASE_URL:  baseUrlOpenAI,
       },
     }
   },
   reset() {
-    if (fs.existsSync(CONFIG_YAML)) {
-      let content = fs.readFileSync(CONFIG_YAML, 'utf8')
-      content = removeHolysheepProvider(content)
-      fs.writeFileSync(CONFIG_YAML, content, 'utf8')
+    const config = readConfig()
+    if (config.provider === 'holysheep') {
+      delete config.provider
+      delete config.providers?.holysheep
     }
+    writeConfig(config)
   },
-  getConfigPath() { return CONFIG_YAML },
-  hint: '切换后需重启终端或新开 terminal',
+  getConfigPath() { return CONFIG_FILE },
+  hint: '切换后重开终端生效；用 codex --provider holysheep 指定',
   installCmd: 'npm install -g @openai/codex',
   docsUrl: 'https://github.com/openai/codex',
-  envVarFormat: 'openai',  // 告知 setup 命令写哪些 env vars
+  envVarFormat: 'openai',
 }
