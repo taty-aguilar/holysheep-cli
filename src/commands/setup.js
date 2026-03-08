@@ -15,6 +15,7 @@ const AUTO_INSTALL = {
   'codex':       { cmd: 'npm install -g @openai/codex',             mgr: 'npm' },
   'gemini-cli':  { cmd: 'npm install -g @google/gemini-cli',        mgr: 'npm' },
   'opencode':    { cmd: 'npm install -g opencode-ai',               mgr: 'npm' },
+  'openclaw':    { cmd: 'npm install -g openclaw@latest',           mgr: 'npm' },
   'aider':       { cmd: 'pip install aider-chat',                   mgr: 'pip' },
 }
 

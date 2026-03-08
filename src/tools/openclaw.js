@@ -1,43 +1,37 @@
 /**
- * OpenClaw 适配器
- * OpenClaw 是基于 Claude Code 架构的开源 AI 编程助手
- * 配置方式与 Claude Code 几乎相同，使用 Anthropic API 格式
+ * OpenClaw 适配器 (github.com/openclaw/openclaw)
  *
- * 配置文件: ~/.openclaw/settings.json (或 ~/.claude/settings.json 共享)
- * 环境变量: ANTHROPIC_API_KEY, ANTHROPIC_BASE_URL
+ * OpenClaw 是个人 AI 助手 + 多渠道消息网关
+ * 支持 WhatsApp/Telegram/Signal/Discord/iMessage 等 20+ 渠道
  *
- * OpenClaw 也支持通过 AGENTS.md 自定义 agent 行为
+ * 安装方式: npm install -g openclaw@latest
+ * 配置文件: ~/.openclaw/openclaw.json (JSON5 格式)
+ * 文档: https://docs.openclaw.ai
+ *
+ * HolySheep 接入方式：通过 env.ANTHROPIC_API_KEY + env.ANTHROPIC_BASE_URL
+ * 设置 Anthropic provider 自定义 base URL 指向 HolySheep 中继
  */
-const fs = require('fs')
+const fs   = require('fs')
 const path = require('path')
-const os = require('os')
+const os   = require('os')
 
-function getSettingsFile() {
-  // OpenClaw 可能用独立配置，也可能共享 Claude 配置
-  const openclaw = path.join(os.homedir(), '.openclaw', 'settings.json')
-  const claude   = path.join(os.homedir(), '.claude', 'settings.json')
-  if (fs.existsSync(openclaw)) return openclaw
-  // 检查是否安装了 openclaw
-  try {
-    require('child_process').execSync('which openclaw', { stdio: 'ignore' })
-    return openclaw
-  } catch {
-    return openclaw  // 默认路径
-  }
-}
+const OPENCLAW_DIR   = path.join(os.homedir(), '.openclaw')
+const CONFIG_FILE    = path.join(OPENCLAW_DIR, 'openclaw.json')
 
-function readSettings(file) {
+function readConfig() {
   try {
-    if (fs.existsSync(file)) {
-      return JSON.parse(fs.readFileSync(file, 'utf8').replace(/[\x00-\x1F\x7F]/g, ' '))
+    if (fs.existsSync(CONFIG_FILE)) {
+      // openclaw.json 是 JSON5 格式，先去掉注释再 parse
+      const raw = fs.readFileSync(CONFIG_FILE, 'utf8')
+      return JSON.parse(raw.replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, ''))
     }
   } catch {}
   return {}
 }
 
-function writeSettings(file, data) {
-  fs.mkdirSync(path.dirname(file), { recursive: true })
-  fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8')
+function writeConfig(data) {
+  fs.mkdirSync(OPENCLAW_DIR, { recursive: true })
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(data, null, 2), 'utf8')
 }
 
 module.exports = {
@@ -47,30 +41,63 @@ module.exports = {
     return require('../utils/which').commandExists('openclaw')
   },
   isConfigured() {
-    const file = getSettingsFile()
-    const s = readSettings(file)
-    return !!(s.env?.ANTHROPIC_API_KEY || s.env?.ANTHROPIC_AUTH_TOKEN)
+    const c = readConfig()
+    return !!(
+      c.env?.ANTHROPIC_BASE_URL?.includes('holysheep') ||
+      c.models?.providers?.holysheep
+    )
   },
-  configure(apiKey, baseUrlAnthropicNoV1) {
-    const file = getSettingsFile()
-    const settings = readSettings(file)
-    if (!settings.env) settings.env = {}
-    settings.env.ANTHROPIC_API_KEY = apiKey
-    settings.env.ANTHROPIC_BASE_URL = baseUrlAnthropicNoV1
-    writeSettings(file, settings)
-    return { file, hot: true }
+  configure(apiKey, baseUrlAnthropicNoV1, baseUrlOpenAI) {
+    const config = readConfig()
+
+    // 设置环境变量 — Anthropic provider 使用 ANTHROPIC_BASE_URL 覆盖默认地址
+    if (!config.env) config.env = {}
+    config.env.ANTHROPIC_API_KEY  = apiKey
+    config.env.ANTHROPIC_BASE_URL = baseUrlAnthropicNoV1  // https://api.holysheep.ai
+
+    // 设置默认模型（如果未配置）
+    if (!config.agents) config.agents = {}
+    if (!config.agents.defaults) config.agents.defaults = {}
+    if (!config.agents.defaults.model) {
+      config.agents.defaults.model = { primary: 'anthropic/claude-sonnet-4-5' }
+    }
+
+    // 同时注册一个 holysheep 自定义 provider（支持所有模型）
+    if (!config.models) config.models = {}
+    config.models.mode = 'merge'
+    if (!config.models.providers) config.models.providers = {}
+    config.models.providers.holysheep = {
+      baseUrl: baseUrlOpenAI,  // https://api.holysheep.ai/v1
+      apiKey,
+      api: 'openai-completions',
+      models: [
+        { id: 'claude-sonnet-4-5', name: 'Claude Sonnet 4.5 (HolySheep)' },
+        { id: 'claude-opus-4-5',   name: 'Claude Opus 4.5 (HolySheep)'   },
+        { id: 'gpt-5.4',           name: 'GPT-5.4 (HolySheep)'           },
+        { id: 'gpt-5',             name: 'GPT-5 (HolySheep)'             },
+      ],
+    }
+
+    writeConfig(config)
+    return { file: CONFIG_FILE, hot: false }
   },
   reset() {
-    const file = getSettingsFile()
-    const settings = readSettings(file)
-    if (settings.env) {
-      delete settings.env.ANTHROPIC_API_KEY
-      delete settings.env.ANTHROPIC_BASE_URL
+    const config = readConfig()
+    if (config.env) {
+      delete config.env.ANTHROPIC_API_KEY
+      delete config.env.ANTHROPIC_BASE_URL
     }
-    writeSettings(file, settings)
+    if (config.models?.providers) {
+      delete config.models.providers.holysheep
+    }
+    // 如果默认模型是 anthropic/xxx，清掉
+    if (config.agents?.defaults?.model?.primary?.startsWith('anthropic/')) {
+      delete config.agents.defaults.model
+    }
+    writeConfig(config)
   },
-  getConfigPath() { return getSettingsFile() },
-  hint: '配置方式同 Claude Code，支持热切换',
-  installCmd: '请访问 openclaw 官网下载安装',
-  docsUrl: 'https://github.com/iOfficeAI/AionUi',
+  getConfigPath() { return CONFIG_FILE },
+  hint: '切换后重启 OpenClaw 生效；支持 /model 命令切换模型',
+  installCmd: 'npm install -g openclaw@latest',
+  docsUrl: 'https://docs.openclaw.ai',
 }

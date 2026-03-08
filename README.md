@@ -41,7 +41,7 @@ Instead of manually editing config files and environment variables for each tool
 | [Aider](https://aider.chat) | `pip install aider-install && aider-install` | `~/.aider.conf.yml` | ✅ Auto |
 | [Continue.dev](https://continue.dev) | VS Code marketplace | `~/.continue/config.yaml` | ✅ Auto |
 | [OpenCode](https://opencode.ai) | `brew install anomalyco/tap/opencode` | `~/.config/opencode/opencode.json` | ✅ Auto |
-| [OpenClaw](https://github.com/iOfficeAI/AionUi) | Download from website | `~/.openclaw/settings.json` | ✅ Auto |
+| [OpenClaw](https://github.com/openclaw/openclaw) | `npm i -g openclaw@latest` | `~/.openclaw/openclaw.json` | ✅ Auto |
 | [Cursor](https://cursor.sh) | Download from website | GUI only (encrypted storage) | ⚠️ Manual |
 | [Gemini CLI](https://github.com/google-gemini/gemini-cli) | `npm i -g @google/gemini-cli` | Google protocol only | ❌ Not supported |
 
@@ -135,7 +135,7 @@ HolySheep 是面向中国开发者的 Claude/GPT/Gemini 官方 API 中转服务�
 | [Aider](https://aider.chat) | `pip install aider-install && aider-install` | `~/.aider.conf.yml` | ✅ 自动 |
 | [Continue.dev](https://continue.dev) | VS Code 插件市场 | `~/.continue/config.yaml` | ✅ 自动 |
 | [OpenCode](https://opencode.ai) | `brew install anomalyco/tap/opencode` | `~/.config/opencode/opencode.json` | ✅ 自动 |
-| [OpenClaw](https://github.com/iOfficeAI/AionUi) | 官网下载 | `~/.openclaw/settings.json` | ✅ 自动 |
+| [OpenClaw](https://github.com/openclaw/openclaw) | `npm i -g openclaw@latest` | `~/.openclaw/openclaw.json` | ✅ 自动 |
 | [Cursor](https://cursor.sh) | 官网下载 | GUI 手动配置（加密存储） | ⚠️ 手动 |
 | [Gemini CLI](https://github.com/google-gemini/gemini-cli) | `npm i -g @google/gemini-cli` | 仅支持 Google 官方协议 | ❌ 不支持 |
 
