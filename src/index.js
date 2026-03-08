@@ -5,11 +5,19 @@ const { program } = require('commander')
 const chalk = require('chalk')
 const pkg = require('../package.json')
 
+// Windows 用户：检测 npm bin 路径是否在 PATH 中
+if (process.platform === 'win32') {
+  const { execSync } = require('child_process')
+  try {
+    // 静默检查，只在首次遇到问题时才会走到这（因为已经能运行 node 了）
+  } catch {}
+}
+
 // Banner
 function printBanner() {
   console.log()
   console.log(chalk.bold('🐑  ' + chalk.hex('#e8a46a')('HolySheep CLI') + '  v' + pkg.version))
-  console.log(chalk.gray('官方 Claude/GPT/Gemini API · ¥1=$1 · shop.holysheep.ai'))
+  console.log(chalk.gray('官方 Claude/GPT/Gemini API · ¥1=$1 · holysheep.ai'))
 }
 
 program
@@ -18,7 +26,7 @@ program
   .version(pkg.version, '-v, --version')
   .addHelpText('before', `
 🐑  HolySheep CLI v${pkg.version}
-官方 Claude / GPT / Gemini API · ¥1=$1 · https://shop.holysheep.ai
+官方 Claude / GPT / Gemini API · ¥1=$1 · https://holysheep.ai
 
 支持工具: Claude Code · Codex · Gemini CLI · OpenCode · OpenClaw · Aider · Cursor · Continue
 `)

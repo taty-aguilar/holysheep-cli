@@ -50,7 +50,7 @@ module.exports = {
     // Aider 用 openai-api-base（OpenAI 兼容格式，带 /v1）
     // model 格式: openai/<model-name> 表示使用 OpenAI 兼容接口
     const block = `
-# holysheep-cli managed — https://shop.holysheep.ai
+# holysheep-cli managed — https://holysheep.ai
 openai-api-key: ${apiKey}
 openai-api-base: ${baseUrlOpenAI}
 model: openai/claude-sonnet-4-5

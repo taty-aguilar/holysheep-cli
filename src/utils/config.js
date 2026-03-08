@@ -11,7 +11,7 @@ const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json')
 
 const BASE_URL_ANTHROPIC = 'https://api.holysheep.ai'         // 不带 /v1 (Anthropic SDK)
 const BASE_URL_OPENAI    = 'https://api.holysheep.ai/v1'      // 带 /v1 (OpenAI 兼容)
-const SHOP_URL           = 'https://shop.holysheep.ai'
+const SHOP_URL           = 'https://holysheep.ai'
 
 function ensureDir() {
   if (!fs.existsSync(CONFIG_DIR)) {

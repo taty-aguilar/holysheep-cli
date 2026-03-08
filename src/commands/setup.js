@@ -75,7 +75,13 @@ async function setup(options) {
   if (!apiKey) {
     console.log(chalk.yellow('需要 API Key 才能配置工具。'))
     console.log(chalk.cyan(`还没有账号？前往注册：${SHOP_URL}`))
-    console.log(chalk.gray(`提示：可先运行 ${chalk.cyan('hs login')} 登录并保存 Key，之后 setup 将自动读取。\n`))
+    console.log(chalk.gray(`提示：可先运行 ${chalk.cyan('hs login')} 登录并保存 Key，之后 setup 将自动读取。`))
+    if (process.platform === 'win32') {
+      console.log(chalk.gray(`  ⚠️  Windows 用户：如果 ${chalk.cyan('hs')} 命令找不到，请用以下方式运行：`))
+      console.log(chalk.gray(`     ${chalk.white('npx @simonyea/holysheep-cli login')}  （无需安装，直接用）`))
+      console.log(chalk.gray(`     或重启终端后再试`))
+    }
+    console.log()
 
     const { key } = await inquirer.prompt([{
       type: 'password',
