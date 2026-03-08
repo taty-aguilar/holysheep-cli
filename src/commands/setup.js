@@ -240,11 +240,11 @@ async function setup(options) {
       // 显示启动命令
       if (r.tool.launchCmd) {
         if (r.tool._winJustInstalled) {
-          // Windows 刚安装：PATH 未刷新，提示用 npx 或重开终端
-          console.log(`    ${chalk.yellow('▶  Windows：新开一个终端后运行:')} ${chalk.cyan.bold(r.tool.launchCmd)}`)
+          // Windows 刚安装：PATH 未刷新，统一用 npx 运行
           const cmdBin = r.tool.launchCmd.split(' ')[0]
           const cmdArgs = r.tool.launchCmd.split(' ').slice(1).join(' ')
-          console.log(`    ${chalk.gray('   或现在用 npx 直接运行:')} ${chalk.cyan.bold('npx ' + cmdBin + (cmdArgs ? ' ' + cmdArgs : ''))}`)
+          const npxCmd = 'npx ' + cmdBin + (cmdArgs ? ' ' + cmdArgs : '')
+          console.log(`    ${chalk.gray('▶  启动命令:')} ${chalk.cyan.bold(npxCmd)}`)
           if (r.tool.launchNote) console.log(`    ${chalk.gray('   ' + r.tool.launchNote)}`)
         } else {
           console.log(`    ${chalk.gray('▶  启动命令:')} ${chalk.cyan.bold(r.tool.launchCmd)}`)
