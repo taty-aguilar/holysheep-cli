@@ -238,22 +238,24 @@ async function setup(options) {
       console.log(`  ✓ ${r.tool.name}${hot}`)
       if (r.tool.hint) console.log(`    ${chalk.gray('💡 ' + r.tool.hint)}`)
       // 显示启动命令
-      if (r.tool.launchCmd) {
+      if (r.tool.launchSteps) {
+        // 多步骤启动（如 openclaw）
+        console.log(`    ${chalk.gray('▶  启动步骤:')}`)
+        r.tool.launchSteps.forEach((s, i) => {
+          console.log(`    ${chalk.gray(`   ${i + 1}.`)} ${chalk.cyan.bold(s.cmd)}  ${chalk.gray(s.note)}`)
+        })
+      } else if (r.tool.launchCmd) {
         if (r.tool._winJustInstalled) {
-          // Windows 刚安装：PATH 未刷新，统一用 npx 运行
           const cmdBin = r.tool.launchCmd.split(' ')[0]
           const cmdArgs = r.tool.launchCmd.split(' ').slice(1).join(' ')
           const npxCmd = 'npx ' + cmdBin + (cmdArgs ? ' ' + cmdArgs : '')
           console.log(`    ${chalk.gray('▶  启动命令:')} ${chalk.cyan.bold(npxCmd)}`)
-          if (r.tool.launchNote) console.log(`    ${chalk.gray('   ' + r.tool.launchNote)}`)
         } else {
           console.log(`    ${chalk.gray('▶  启动命令:')} ${chalk.cyan.bold(r.tool.launchCmd)}`)
         }
+        if (r.tool.launchNote) console.log(`    ${chalk.gray('   ' + r.tool.launchNote)}`)
       } else if (r.tool.launchNote) {
         console.log(`    ${chalk.gray('▶  ' + r.tool.launchNote)}`)
-      }
-      if (r.tool.launchNote && r.tool.launchCmd && !r.tool._winJustInstalled) {
-        console.log(`    ${chalk.gray('   ' + r.tool.launchNote)}`)
       }
     })
     console.log()

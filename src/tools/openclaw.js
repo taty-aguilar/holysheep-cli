@@ -98,8 +98,12 @@ module.exports = {
   },
   getConfigPath() { return CONFIG_FILE },
   hint: '切换后重启 OpenClaw 生效；支持 /model 命令切换模型',
-  launchCmd: 'openclaw dashboard',
-  launchNote: '启动后访问 http://127.0.0.1:18789/ 打开 WebUI',
+  launchCmd: null,
+  launchSteps: [
+    { cmd: 'npx openclaw onboard',        note: '首次初始化（设置模型、鉴权等）' },
+    { cmd: 'npx openclaw gateway start',  note: '启动后台 Gateway 服务'          },
+    { cmd: 'npx openclaw dashboard',      note: '打开 WebUI → http://127.0.0.1:18789/' },
+  ],
   installCmd: 'npm install -g openclaw@latest',
   docsUrl: 'https://docs.openclaw.ai',
 }
