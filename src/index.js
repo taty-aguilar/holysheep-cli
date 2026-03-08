@@ -13,6 +13,34 @@ if (process.platform === 'win32') {
   } catch {}
 }
 
+// 异步检查最新版本（不阻塞主流程）
+function checkLatestVersion() {
+  try {
+    const https = require('https')
+    const req = https.get(
+      `https://registry.npmjs.org/@simonyea/holysheep-cli/latest`,
+      { timeout: 3000 },
+      (res) => {
+        let data = ''
+        res.on('data', chunk => { data += chunk })
+        res.on('end', () => {
+          try {
+            const latest = JSON.parse(data).version
+            if (latest && latest !== pkg.version) {
+              console.log()
+              console.log(chalk.yellow(`⚠️  发现新版本 v${latest}（当前 v${pkg.version}）`))
+              console.log(chalk.cyan(`   建议运行: npx @simonyea/holysheep-cli@latest setup`))
+              console.log(chalk.gray(`   或更新: npm install -g @simonyea/holysheep-cli@latest`))
+            }
+          } catch {}
+        })
+      }
+    )
+    req.on('error', () => {})
+    req.setTimeout(3000, () => req.destroy())
+  } catch {}
+}
+
 // Banner
 function printBanner() {
   console.log()
@@ -66,6 +94,7 @@ program
   .option('-a, --all', '配置所有已安装的工具（跳过选择）')
   .action(async (opts) => {
     printBanner()
+    checkLatestVersion()  // 异步检查版本，不阻塞
     await require('./commands/setup')(opts)
   })
 

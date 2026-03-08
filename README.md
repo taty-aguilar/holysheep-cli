@@ -58,7 +58,7 @@ npm install -g @simonyea/holysheep-cli
 No npm? Try npx (no install needed):
 
 ```bash
-npx @simonyea/holysheep-cli setup
+npx @simonyea/holysheep-cli@latest setup
 ```
 
 ### Quick Start
@@ -152,7 +152,7 @@ npm install -g @simonyea/holysheep-cli
 没有 npm？用 npx 免安装直接运行：
 
 ```bash
-npx @simonyea/holysheep-cli setup
+npx @simonyea/holysheep-cli@latest setup
 ```
 
 ### 快速开始
