@@ -45,19 +45,13 @@ async function tryAutoInstall(tool) {
       spinner.fail(`安装失败，请手动运行: ${chalk.cyan(info.cmd)}`)
       return false
     }
-    // Windows PATH 在当前进程内不会刷新，安装成功即认为可用
-    if (process.platform === 'win32') {
-      spinner.succeed(`${tool.name} 安装完成（请重新开一个终端窗口后运行 hs setup 完成配置）`)
-      return false  // 返回 false 跳过配置，让用户重开终端再来
+    spinner.succeed(`${tool.name} 安装成功`)
+    // Windows PATH 在当前进程内不会刷新，但安装已成功，直接继续配置
+    // 非 Windows 再额外做一次检测
+    if (process.platform !== 'win32' && !tool.checkInstalled()) {
+      console.log(chalk.yellow(`  ⚠ 安装后未检测到命令，尝试直接配置...`))
     }
-    // 安装后重新检测
-    if (tool.checkInstalled()) {
-      spinner.succeed(`${tool.name} 安装成功`)
-      return true
-    } else {
-      spinner.fail(`${tool.name} 安装后仍未检测到，请手动安装: ${chalk.cyan(info.cmd)}`)
-      return false
-    }
+    return true  // 安装成功就视为可配置
   } catch (e) {
     spinner.fail(`安装失败: ${e.message}`)
     return false
@@ -138,6 +132,7 @@ async function setup(options) {
   const selectedTools = TOOLS.filter(t => toolIds.includes(t.id))
   const needInstall = selectedTools.filter(t => !t.checkInstalled() && canAutoInstall(t.id))
   const cantInstall = selectedTools.filter(t => !t.checkInstalled() && !canAutoInstall(t.id))
+  const justInstalled = new Set()  // 记录本次刚安装成功的工具 id
 
   // 提示不能自动安装的工具
   if (cantInstall.length) {
@@ -157,16 +152,17 @@ async function setup(options) {
 
     if (doInstall) {
       for (const tool of needInstall) {
-        await tryAutoInstall(tool)
+        const ok = await tryAutoInstall(tool)
+        if (ok) justInstalled.add(tool.id)
       }
       console.log()
     }
   }
 
-  // Step 4: 配置每个已安装的工具
+  // Step 4: 配置每个已安装的工具（包含刚刚安装成功的）
   const envVarsToWrite = {}
   const results = []
-  const toConfigureTools = selectedTools.filter(t => t.checkInstalled())
+  const toConfigureTools = selectedTools.filter(t => t.checkInstalled() || justInstalled.has(t.id))
 
   if (toConfigureTools.length === 0) {
     console.log(chalk.yellow('没有可配置的工具（请先安装），退出。'))
