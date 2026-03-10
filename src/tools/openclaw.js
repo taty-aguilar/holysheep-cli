@@ -1,45 +1,26 @@
 /**
  * OpenClaw 适配器
  *
- * 策略：完全通过 openclaw CLI 官方命令完成配置，不手写 JSON。
+ * 策略：直接写正确格式的 openclaw.json，然后 doctor --fix 迁移，
+ * 最后用 wt/cmd 新窗口运行 gateway（Windows）或 detach（Unix）。
  *
- * 核心命令：
- *   openclaw onboard \
- *     --non-interactive \
- *     --auth-choice custom-api-key \
- *     --custom-base-url https://api.holysheep.ai \
- *     --custom-api-key <key> \
- *     --custom-model-id claude-sonnet-4-6 \
- *     --custom-compatibility anthropic \
- *     --install-daemon
- *
- * 文档: https://docs.openclaw.ai/start/wizard-cli-reference
+ * 文档: https://docs.openclaw.ai
  */
 const fs            = require('fs')
 const path          = require('path')
 const os            = require('os')
-const { spawnSync } = require('child_process')
+const crypto        = require('crypto')
+const { spawnSync, spawn, execSync } = require('child_process')
 
 const OPENCLAW_DIR = path.join(os.homedir(), '.openclaw')
 const CONFIG_FILE  = path.join(OPENCLAW_DIR, 'openclaw.json')
+const isWin        = process.platform === 'win32'
 
-/** Windows PATH 未刷新时用 npx，其他直接用 openclaw */
-function bin(...args) {
-  const isWin = process.platform === 'win32'
-  if (isWin) {
-    return { cmd: 'npx', args: ['openclaw', ...args] }
-  }
-  return { cmd: 'openclaw', args }
-}
-
-function run(args, opts = {}) {
-  const { cmd, args: fullArgs } = bin(...args)
-  return spawnSync(cmd, fullArgs, {
-    shell:   true,
-    timeout: opts.timeout || 30000,
-    stdio:   opts.stdio   || 'pipe',
-    env:     { ...process.env, ...(opts.env || {}) },
-  })
+function npx(...args) {
+  // Windows 下始终用 npx 以绕过 PATH 问题
+  return isWin
+    ? spawnSync('npx', ['openclaw', ...args], { shell: true, timeout: 30000, stdio: 'pipe' })
+    : spawnSync('openclaw', args,             { shell: false, timeout: 30000, stdio: 'pipe' })
 }
 
 function readConfig() {
@@ -52,20 +33,50 @@ function readConfig() {
   return {}
 }
 
+/** 写入正确格式的 openclaw.json */
+function writeCorrectConfig(apiKey, baseUrl) {
+  fs.mkdirSync(OPENCLAW_DIR, { recursive: true })
+
+  const token = crypto.randomBytes(24).toString('hex')
+
+  // 完全正确的格式，基于 openclaw 2026.3.x 实测
+  const config = {
+    agents: {
+      defaults: {
+        model: { primary: 'custom/claude-sonnet-4-6' }
+      }
+    },
+    gateway: {
+      port: 18789,
+      bind: 'loopback',       // 新格式，不用 "127.0.0.1"
+      auth: {
+        mode:  'token',
+        token,
+      }
+    },
+    // Custom provider — OpenAI-compatible
+    providers: {
+      custom: {
+        baseUrl,              // https://api.holysheep.ai
+        apiKey,
+        compatibility: 'anthropic',
+      }
+    }
+  }
+
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf8')
+  return token
+}
+
 module.exports = {
   name: 'OpenClaw',
   id:   'openclaw',
 
   checkInstalled() {
-    // 先检测命令是否在 PATH 里
     if (require('../utils/which').commandExists('openclaw')) return true
-    // Windows PATH 未刷新时，npx 探测
-    if (process.platform === 'win32') {
+    if (isWin) {
       try {
-        require('child_process').execSync(
-          'npx --yes openclaw --version',
-          { stdio: 'ignore', timeout: 15000, shell: true }
-        )
+        execSync('npx openclaw --version', { stdio: 'ignore', timeout: 15000, shell: true })
         return true
       } catch {}
     }
@@ -73,81 +84,45 @@ module.exports = {
   },
 
   isConfigured() {
-    const c = readConfig()
-    // 检查是否已有 holysheep custom provider 配置
-    const cfg = JSON.stringify(c)
-    return cfg.includes('holysheep.ai') || cfg.includes('holysheep')
+    const cfg = JSON.stringify(readConfig())
+    return cfg.includes('holysheep.ai')
   },
 
   configure(apiKey, baseUrlAnthropicNoV1) {
     const chalk = require('chalk')
+    console.log(chalk.gray('\n  ⚙️  正在配置 OpenClaw...'))
 
-    console.log(chalk.gray('\n  ⚙️  正在通过 OpenClaw 官方向导配置（约 30 秒）...'))
+    // 1. 写入正确格式配置
+    writeCorrectConfig(apiKey, baseUrlAnthropicNoV1)
 
-    // Step 1: 删除旧配置，避免 onboard 检测到现有配置后跳过重写
-    try {
-      if (fs.existsSync(CONFIG_FILE)) fs.unlinkSync(CONFIG_FILE)
-    } catch {}
+    // 2. doctor --fix 修复任何兼容性问题
+    npx('doctor', '--fix')
 
-    // Step 2: 用官方 onboard 非交互式命令完成配置 + 安装系统服务
-    const r = run([
-      'onboard',
-      '--non-interactive',
-      '--auth-choice',        'custom-api-key',
-      '--custom-base-url',    baseUrlAnthropicNoV1,   // https://api.holysheep.ai
-      '--custom-api-key',     apiKey,
-      '--custom-model-id',    'claude-sonnet-4-6',
-      '--custom-compatibility', 'anthropic',
-      '--install-daemon',
-    ], {
-      timeout: 90000,
-      stdio:   'pipe',
-      env: {
-        CUSTOM_API_KEY:   apiKey,
-        ANTHROPIC_API_KEY: apiKey,
-        ANTHROPIC_BASE_URL: baseUrlAnthropicNoV1,
-      },
-    })
+    // 3. 启动 Gateway
+    console.log(chalk.gray('  → 正在启动 Gateway...'))
+    const ok = _startGateway()
 
-    const stdout = r.stdout?.toString() || ''
-    const stderr = r.stderr?.toString() || ''
-
-    if (r.status === 0) {
-      console.log(chalk.green('  ✓ OpenClaw 配置完成，Gateway 已在后台启动'))
+    if (ok) {
+      console.log(chalk.green('  ✓ OpenClaw Gateway 已启动'))
       console.log(chalk.cyan('  → 浏览器打开: http://127.0.0.1:18789/'))
-      return { file: CONFIG_FILE, hot: false }
-    }
-
-    // onboard 失败，尝试直接启动 gateway
-    console.log(chalk.gray('  → 配置完成，正在启动 Gateway...'))
-    const started = _startGateway()
-
-    if (!started) {
-      // 给用户明确的手动命令
-      console.log(chalk.yellow('\n  ⚠️  Gateway 需要手动启动，运行以下命令：'))
-      if (process.platform === 'win32') {
-        console.log(chalk.cyan('  npx openclaw gateway install'))
-        console.log(chalk.cyan('  npx openclaw gateway start'))
-      } else {
-        console.log(chalk.cyan('  openclaw gateway install'))
-        console.log(chalk.cyan('  openclaw gateway start'))
-      }
+    } else {
+      console.log(chalk.yellow('  ⚠️  请手动启动 Gateway：'))
+      console.log(chalk.cyan(isWin ? '  npx openclaw gateway' : '  openclaw gateway'))
     }
 
     return { file: CONFIG_FILE, hot: false }
   },
 
   reset() {
-    run(['doctor', '--reset'], { stdio: 'ignore', timeout: 15000 })
+    try { fs.unlinkSync(CONFIG_FILE) } catch {}
   },
 
   getConfigPath() { return CONFIG_FILE },
-  hint:      'Gateway 已自动启动，打开浏览器即可使用',
-  launchCmd:  null,
+  hint: 'Gateway 已启动，打开浏览器即可使用',
+  launchCmd: null,
   get launchNote() {
-    const isWin = process.platform === 'win32'
     return isWin
-      ? '🌐 打开浏览器: http://127.0.0.1:18789/\n    如无法访问: npx openclaw gateway start'
+      ? '🌐 打开浏览器: http://127.0.0.1:18789/\n    如无法访问: npx openclaw gateway'
       : '🌐 打开浏览器: http://127.0.0.1:18789/'
   },
   installCmd: 'npm install -g openclaw@latest',
@@ -155,52 +130,37 @@ module.exports = {
 }
 
 /**
- * 尝试启动 Gateway，返回是否成功
+ * 启动 Gateway 后台进程
+ * Windows: PowerShell Start-Process 开新的隐藏 PowerShell 窗口
+ * Unix: detached child process
  */
 function _startGateway() {
-  const chalk  = require('chalk')
-  const isWin  = process.platform === 'win32'
-
-  // 先尝试 gateway start（已有服务时生效）
-  const r = run(['gateway', 'start'], { timeout: 10000 })
-  if (r.status === 0) {
-    console.log(chalk.green('  ✓ OpenClaw Gateway 已启动'))
-    console.log(chalk.cyan('  → 浏览器打开: http://127.0.0.1:18789/'))
-    return true
-  }
-
-  // gateway start 失败 → 直接后台运行进程（不依赖 schtasks/daemon）
-  const { spawn } = require('child_process')
   if (isWin) {
-    // Windows: Start-Process 开隐藏窗口运行 npx openclaw gateway
+    // 用 Start-Process 开一个后台 powershell 窗口运行 npx openclaw gateway
     spawnSync('powershell', [
       '-NonInteractive', '-Command',
-      `Start-Process powershell -ArgumentList '-NonInteractive','-WindowStyle','Hidden','-Command','npx openclaw gateway --port 18789' -WindowStyle Hidden`
-    ], { shell: false, timeout: 8000, stdio: 'ignore' })
+      `Start-Process -FilePath powershell -ArgumentList @('-NonInteractive','-WindowStyle','Hidden','-Command','npx openclaw gateway --port 18789') -WindowStyle Hidden -PassThru | Out-Null`
+    ], { shell: false, timeout: 10000, stdio: 'ignore' })
   } else {
     const child = spawn('openclaw', ['gateway', '--port', '18789'], {
-      detached: true, stdio: 'ignore',
+      detached: true,
+      stdio: 'ignore',
     })
     child.unref()
   }
 
-  // 等 5 秒让 gateway 起来
-  const deadline = Date.now() + 5000
-  while (Date.now() < deadline) {}
-
-  // 验证
-  try {
-    const { execSync } = require('child_process')
-    execSync(
-      isWin
-        ? 'powershell -NonInteractive -Command "(Invoke-WebRequest -Uri http://127.0.0.1:18789/ -TimeoutSec 3 -UseBasicParsing).StatusCode"'
-        : 'curl -sf http://127.0.0.1:18789/ -o /dev/null --max-time 3',
-      { stdio: 'ignore', timeout: 5000 }
-    )
-    console.log(chalk.green('  ✓ OpenClaw Gateway 已启动'))
-    console.log(chalk.cyan('  → 浏览器打开: http://127.0.0.1:18789/'))
-    return true
-  } catch {
-    return false
+  // 等待 gateway 启动（最多 8 秒）
+  for (let i = 0; i < 8; i++) {
+    const t = Date.now(); while (Date.now() - t < 1000) {}
+    try {
+      execSync(
+        isWin
+          ? 'powershell -NonInteractive -Command "try { (Invoke-WebRequest -Uri http://127.0.0.1:18789/ -TimeoutSec 1 -UseBasicParsing).StatusCode } catch { exit 1 }"'
+          : 'curl -sf http://127.0.0.1:18789/ -o /dev/null --max-time 1',
+        { stdio: 'ignore', timeout: 3000 }
+      )
+      return true  // 成功响应
+    } catch {}
   }
+  return false
 }
