@@ -146,7 +146,6 @@ sh.Run "cmd /c npx openclaw gateway --port 18789", 0, False
       fs.writeFileSync(vbsPath, vbs, 'utf8')
       spawnSync('wscript', [vbsPath], { shell: false, timeout: 5000, stdio: 'ignore' })
     } catch {}
-  }
   } else {
     const child = spawn('openclaw', ['gateway', '--port', '18789'], {
       detached: true,
