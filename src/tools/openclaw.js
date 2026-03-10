@@ -39,7 +39,15 @@ function writeCorrectConfig(apiKey, baseUrl) {
 
   const token = crypto.randomBytes(24).toString('hex')
 
+  // HolySheep 是 Anthropic-compatible API
+  // 正确做法: env.ANTHROPIC_API_KEY + env.ANTHROPIC_BASE_URL
+  // 模型用 anthropic/claude-sonnet-4-6
+  // 参考: https://docs.openclaw.ai/providers/claude-max-api-proxy
   const config = {
+    env: {
+      ANTHROPIC_API_KEY:  apiKey,
+      ANTHROPIC_BASE_URL: baseUrl,
+    },
     agents: {
       defaults: {
         model: { primary: 'anthropic/claude-sonnet-4-6' }
@@ -51,35 +59,9 @@ function writeCorrectConfig(apiKey, baseUrl) {
       bind: 'loopback',
       auth: { mode: 'token', token }
     },
-    // env 供 SDK 自动读取（兜底）
-    env: {
-      ANTHROPIC_API_KEY:  apiKey,
-      ANTHROPIC_BASE_URL: baseUrl,
-    }
   }
 
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf8')
-
-  // openclaw 从 agents/main/agent/auth-profiles.json 读 API key
-  // 必须写入这个文件，否则报 "No API key found for provider anthropic"
-  const authDir = path.join(OPENCLAW_DIR, 'agents', 'main', 'agent')
-  fs.mkdirSync(authDir, { recursive: true })
-  const authProfiles = {
-    profiles: {
-      holysheep: {
-        provider: 'anthropic',
-        apiKey,           // openclaw 用 apiKey 字段
-        baseUrl:  baseUrl,
-      }
-    },
-    default: 'holysheep'
-  }
-  fs.writeFileSync(
-    path.join(authDir, 'auth-profiles.json'),
-    JSON.stringify(authProfiles, null, 2),
-    'utf8'
-  )
-
   return token
 }
 
@@ -112,18 +94,10 @@ module.exports = {
     const authProfilePath = path.join(OPENCLAW_DIR, 'agents', 'main', 'agent', 'auth-profiles.json')
     try { fs.unlinkSync(authProfilePath) } catch {}
 
-    // 2. 写配置文件（gateway + env）
+    // 2. 写配置文件（env + gateway）
     writeCorrectConfig(apiKey, baseUrlAnthropicNoV1)
 
-    // 3. 用 openclaw onboard --anthropic-api-key 让 openclaw 自己写 auth-profiles.json
-    console.log(chalk.gray('  → 写入认证信息...'))
-    npx(
-      'onboard',
-      '--non-interactive',
-      '--anthropic-api-key', apiKey,
-    )
-
-    // 4. doctor --fix
+    // 3. doctor --fix 处理兼容性问题
     npx('doctor', '--fix')
 
     // 读取写入的 token（用于生成带 token 的直接访问 URL）
