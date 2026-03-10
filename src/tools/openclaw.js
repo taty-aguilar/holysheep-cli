@@ -136,12 +136,17 @@ module.exports = {
  */
 function _startGateway() {
   if (isWin) {
-    // Windows: 开一个新的最小化 cmd 窗口运行 gateway（不隐藏，否则用户看不到）
-    // 用 start 命令开新窗口，这样主进程可以继续
-    spawnSync('cmd', [
-      '/c', 'start', '"OpenClaw Gateway"', '/min',
-      'cmd', '/k', 'npx openclaw gateway --port 18789'
-    ], { shell: false, timeout: 5000, stdio: 'ignore' })
+    // Windows: 用 WScript.Shell 后台静默运行，不弹窗口，最可靠
+    const vbs = `
+Set sh = CreateObject("WScript.Shell")
+sh.Run "cmd /c npx openclaw gateway --port 18789", 0, False
+`.trim()
+    const vbsPath = path.join(os.tmpdir(), 'openclaw-gateway.vbs')
+    try {
+      fs.writeFileSync(vbsPath, vbs, 'utf8')
+      spawnSync('wscript', [vbsPath], { shell: false, timeout: 5000, stdio: 'ignore' })
+    } catch {}
+  }
   } else {
     const child = spawn('openclaw', ['gateway', '--port', '18789'], {
       detached: true,
