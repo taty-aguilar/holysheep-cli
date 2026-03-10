@@ -39,7 +39,6 @@ function writeCorrectConfig(apiKey, baseUrl) {
 
   const token = crypto.randomBytes(24).toString('hex')
 
-  // 完全正确的格式，基于 openclaw 2026.3.x 实测
   const config = {
     agents: {
       defaults: {
@@ -47,19 +46,40 @@ function writeCorrectConfig(apiKey, baseUrl) {
       }
     },
     gateway: {
-      mode: 'local',          // 必须设置，否则 gateway start 被 blocked
+      mode: 'local',
       port: 18789,
-      bind: 'loopback',       // 新格式，不用 "127.0.0.1"
-      auth: {
-        mode:  'token',
-        token,
-      }
+      bind: 'loopback',
+      auth: { mode: 'token', token }
     },
-    // 不需要 custom provider，通过 env 覆盖 Anthropic base URL 即可
-    // openclaw 读 ANTHROPIC_BASE_URL 后用 anthropic/ 前缀模型
+    // env 供 SDK 自动读取（兜底）
+    env: {
+      ANTHROPIC_API_KEY:  apiKey,
+      ANTHROPIC_BASE_URL: baseUrl,
+    }
   }
 
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2), 'utf8')
+
+  // openclaw 从 agents/main/agent/auth-profiles.json 读 API key
+  // 必须写入这个文件，否则报 "No API key found for provider anthropic"
+  const authDir = path.join(OPENCLAW_DIR, 'agents', 'main', 'agent')
+  fs.mkdirSync(authDir, { recursive: true })
+  const authProfiles = {
+    profiles: {
+      holysheep: {
+        provider: 'anthropic',
+        key:      apiKey,
+        baseUrl:  baseUrl,
+      }
+    },
+    default: 'holysheep'
+  }
+  fs.writeFileSync(
+    path.join(authDir, 'auth-profiles.json'),
+    JSON.stringify(authProfiles, null, 2),
+    'utf8'
+  )
+
   return token
 }
 
