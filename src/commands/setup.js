@@ -156,7 +156,15 @@ async function setup(options) {
     if (doInstall) {
       for (const tool of needInstall) {
         const ok = await tryAutoInstall(tool)
-        if (ok) justInstalled.add(tool.id)
+        if (ok) {
+          justInstalled.add(tool.id)
+        } else if (tool.id === 'openclaw') {
+          // openclaw 安装失败时（如无 git），改用 npx 模式继续配置
+          // checkInstalled() 里已有 npx fallback，标记为已安装
+          console.log(chalk.yellow(`  ⚠️  全局安装失败，将使用 npx openclaw 代替`))
+          tool._useNpx = true
+          justInstalled.add(tool.id)
+        }
       }
       console.log()
     }
