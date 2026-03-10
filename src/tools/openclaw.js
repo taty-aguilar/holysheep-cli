@@ -84,10 +84,10 @@ module.exports = {
 
     console.log(chalk.gray('\n  ⚙️  正在通过 OpenClaw 官方向导配置（约 30 秒）...'))
 
-    // Step 1: 如果配置文件存在且有问题，先 doctor --fix
-    if (fs.existsSync(CONFIG_FILE)) {
-      run(['doctor', '--fix'], { stdio: 'ignore', timeout: 15000 })
-    }
+    // Step 1: 删除旧配置，避免 onboard 检测到现有配置后跳过重写
+    try {
+      if (fs.existsSync(CONFIG_FILE)) fs.unlinkSync(CONFIG_FILE)
+    } catch {}
 
     // Step 2: 用官方 onboard 非交互式命令完成配置 + 安装系统服务
     const r = run([
@@ -161,9 +161,7 @@ function _startGateway() {
   const chalk  = require('chalk')
   const isWin  = process.platform === 'win32'
 
-  // 先 install，再 start
-  run(['gateway', 'install'], { stdio: 'ignore', timeout: 20000 })
-
+  // 先尝试 gateway start（已有服务时生效）
   const r = run(['gateway', 'start'], { timeout: 10000 })
   if (r.status === 0) {
     console.log(chalk.green('  ✓ OpenClaw Gateway 已启动'))
@@ -171,24 +169,26 @@ function _startGateway() {
     return true
   }
 
-  // fallback: 直接运行 gateway 进程（Windows 用 Start-Process 后台）
+  // gateway start 失败 → 直接后台运行进程（不依赖 schtasks/daemon）
+  const { spawn } = require('child_process')
   if (isWin) {
+    // Windows: Start-Process 开隐藏窗口运行 npx openclaw gateway
     spawnSync('powershell', [
       '-NonInteractive', '-Command',
-      `Start-Process -FilePath "npx" -ArgumentList @("openclaw","gateway","--port","18789") -WindowStyle Hidden`
-    ], { shell: false, timeout: 5000, stdio: 'ignore' })
+      `Start-Process powershell -ArgumentList '-NonInteractive','-WindowStyle','Hidden','-Command','npx openclaw gateway --port 18789' -WindowStyle Hidden`
+    ], { shell: false, timeout: 8000, stdio: 'ignore' })
   } else {
-    const { spawn } = require('child_process')
     const child = spawn('openclaw', ['gateway', '--port', '18789'], {
       detached: true, stdio: 'ignore',
     })
     child.unref()
   }
 
-  // 等 5 秒，验证是否真的起来
+  // 等 5 秒让 gateway 起来
   const deadline = Date.now() + 5000
   while (Date.now() < deadline) {}
 
+  // 验证
   try {
     const { execSync } = require('child_process')
     execSync(
