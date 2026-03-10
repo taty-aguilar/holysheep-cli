@@ -70,9 +70,9 @@ function buildFullConfig(existing, apiKey, baseUrlAnthropicNoV1, baseUrlOpenAI) 
   // ── 3. 默认模型 ────────────────────────────────────────────────────
   if (!config.agents) config.agents = {}
   if (!config.agents.defaults) config.agents.defaults = {}
-  // 总是覆写为 HolySheep 最新 Sonnet（用户可以在 /model 命令里切换）
+  // 总是覆写为 HolySheep 最新 Sonnet 4.6
   config.agents.defaults.model = {
-    primary: 'anthropic/claude-sonnet-4-5-20250929',
+    primary: 'anthropic/claude-sonnet-4-6',
   }
 
   // ── 4. 自定义 holysheep provider（OpenAI-compatible，支持所有模型）
@@ -84,6 +84,7 @@ function buildFullConfig(existing, apiKey, baseUrlAnthropicNoV1, baseUrlOpenAI) 
     apiKey,
     api:     'openai-completions',
     models: [
+      { id: 'claude-sonnet-4-6',          name: 'Claude Sonnet 4.6 (HolySheep)' },
       { id: 'claude-sonnet-4-5-20250929', name: 'Claude Sonnet 4.5 (HolySheep)' },
       { id: 'claude-sonnet-4-20250514',   name: 'Claude Sonnet 4 (HolySheep)'   },
       { id: 'claude-opus-4-5-20251101',   name: 'Claude Opus 4.5 (HolySheep)'   },
