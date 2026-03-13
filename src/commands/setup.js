@@ -89,8 +89,39 @@ async function setup(options) {
     }])
     apiKey = key
   } else {
-    console.log(`${chalk.green('✓')} 使用已保存的 API Key: ${chalk.cyan(maskKey(apiKey))}`)
+    console.log(`${chalk.green('✓')} 已保存的 API Key: ${chalk.cyan(maskKey(apiKey))}`)
+    const { useExisting } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'useExisting',
+      message: '使用此 Key 继续？（输入 N 可更换）',
+      default: true,
+    }])
+    if (!useExisting) {
+      const { key } = await inquirer.prompt([{
+        type: 'password',
+        name: 'key',
+        message: '请输入新的 API Key (cr_xxx):',
+        validate: v => v.startsWith('cr_') ? true : '请输入以 cr_ 开头的 API Key',
+      }])
+      apiKey = key
+      saveConfig({ apiKey: key })
+    }
   }
+
+  // Step 1.5: 选择要配置的模型
+  const MODEL_CHOICES = [
+    { name: 'claude-sonnet-4-6  (Sonnet 4.6, 均衡推荐)', value: 'claude-sonnet-4-6',       checked: true },
+    { name: 'claude-opus-4-6    (Opus 4.6, 强力旗舰)',   value: 'claude-opus-4-6',         checked: true },
+    { name: 'MiniMax-M2.5-highspeed (高速经济版)',        value: 'MiniMax-M2.5-highspeed',  checked: true },
+  ]
+  const { selectedModels } = await inquirer.prompt([{
+    type: 'checkbox',
+    name: 'selectedModels',
+    message: '选择要配置的模型（默认全选，空格取消选中）:',
+    choices: MODEL_CHOICES,
+    pageSize: 5,
+  }])
+  const primaryModel = selectedModels.find(m => m.startsWith('claude-')) || selectedModels[0] || 'claude-sonnet-4-6'
 
   // Step 2: 选择工具（已安装 + 未安装分组显示）
   const installedTools   = TOOLS.filter(t => t.checkInstalled())
@@ -183,7 +214,7 @@ async function setup(options) {
   for (const tool of toConfigureTools) {
     const spinner = ora(`配置 ${tool.name}...`).start()
     try {
-      const result = tool.configure(apiKey, BASE_URL_ANTHROPIC, BASE_URL_OPENAI)
+      const result = tool.configure(apiKey, BASE_URL_ANTHROPIC, BASE_URL_OPENAI, primaryModel, selectedModels)
 
       if (result.manual) {
         spinner.info(`${chalk.yellow(tool.name)} 需要手动配置:`)

@@ -81,7 +81,7 @@ module.exports = {
       c.provider?.openai?.options?.baseURL?.includes('holysheep')
     )
   },
-  configure(apiKey, baseUrlAnthropicNoV1, baseUrlOpenAI) {
+  configure(apiKey, baseUrlAnthropicNoV1, baseUrlOpenAI, primaryModel) {
     const config = readConfig()
     if (!config.provider) config.provider = {}
 
@@ -105,9 +105,7 @@ module.exports = {
     }
 
     // 设置默认模型
-    if (!config.model) {
-      config.model = 'anthropic/claude-sonnet-4-5'
-    }
+    config.model = `anthropic/${primaryModel || 'claude-sonnet-4-6'}`
 
     writeConfig(config)
     return { file: getConfigFile(), hot: false }

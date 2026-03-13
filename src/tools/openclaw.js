@@ -57,7 +57,7 @@ module.exports = {
     return cfg.includes('holysheep.ai')
   },
 
-  configure(apiKey, baseUrl) {
+  configure(apiKey, baseUrl, _baseUrlOpenAI, primaryModel, selectedModels) {
     const chalk = require('chalk')
     console.log(chalk.gray('\n  ⚙️  正在配置 OpenClaw...'))
 
@@ -90,7 +90,7 @@ module.exports = {
       '--auth-choice', 'custom-api-key',
       '--custom-base-url', baseUrl,
       '--custom-api-key', apiKey,
-      '--custom-model-id', 'claude-sonnet-4-6',
+      '--custom-model-id', primaryModel || 'claude-sonnet-4-6',
       '--custom-compatibility', 'anthropic',
       '--install-daemon',
     )
@@ -98,7 +98,7 @@ module.exports = {
     if (result.status !== 0) {
       // onboard 失败时 fallback：手写最小化配置
       console.log(chalk.yellow('  ⚠️  onboard 失败，使用备用配置...'))
-      _writeFallbackConfig(apiKey, baseUrl)
+      _writeFallbackConfig(apiKey, baseUrl, selectedModels, primaryModel)
     }
 
     // 4. 关闭 gateway token 认证（直接打开浏览器无需 token）
@@ -136,11 +136,18 @@ module.exports = {
 }
 
 /** onboard 失败时的备用配置（基于实测的正确格式） */
-function _writeFallbackConfig(apiKey, baseUrl) {
+function _writeFallbackConfig(apiKey, baseUrl, selectedModels, primaryModel) {
   fs.mkdirSync(OPENCLAW_DIR, { recursive: true })
 
   const hostname = new URL(baseUrl).hostname.replace(/\./g, '-')
   const providerName = `custom-api-${hostname}`
+
+  // 默认配置的 Claude 模型列表（只注册 Claude 系列，MiniMax 用独立 provider）
+  const claudeModels = (selectedModels || ['claude-sonnet-4-6'])
+    .filter(m => m.startsWith('claude-'))
+  if (claudeModels.length === 0) claudeModels.push('claude-sonnet-4-6')
+
+  const primary = primaryModel || claudeModels[0]
 
   const config = {
     models: {
@@ -150,20 +157,20 @@ function _writeFallbackConfig(apiKey, baseUrl) {
           baseUrl,
           apiKey,
           api: 'anthropic-messages',
-          models: [{
-            id: 'claude-sonnet-4-6',
-            name: 'claude-sonnet-4-6 (HolySheep)',
+          models: claudeModels.map(id => ({
+            id,
+            name: `${id} (HolySheep)`,
             reasoning: false,
             input: ['text'],
             contextWindow: 200000,
             maxTokens: 16000,
-          }],
+          })),
         }
       }
     },
     agents: {
       defaults: {
-        model: { primary: `${providerName}/claude-sonnet-4-6` }
+        model: { primary: `${providerName}/${primary}` }
       }
     },
     gateway: {

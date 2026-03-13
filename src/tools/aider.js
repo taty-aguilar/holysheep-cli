@@ -44,16 +44,17 @@ module.exports = {
     const content = readConfig()
     return content.includes('holysheep')
   },
-  configure(apiKey, _baseUrlAnthropicNoV1, baseUrlOpenAI) {
+  configure(apiKey, _baseUrlAnthropicNoV1, baseUrlOpenAI, primaryModel) {
     let content = readConfig()
     content = removeHsBlock(content)
     // Aider 用 openai-api-base（OpenAI 兼容格式，带 /v1）
     // model 格式: openai/<model-name> 表示使用 OpenAI 兼容接口
+    const model = primaryModel || 'claude-sonnet-4-6'
     const block = `
 # holysheep-cli managed — https://holysheep.ai
 openai-api-key: ${apiKey}
 openai-api-base: ${baseUrlOpenAI}
-model: openai/claude-sonnet-4-5
+model: openai/${model}
 `
     content += block
     fs.writeFileSync(CONFIG_FILE, content.trim() + '\n', 'utf8')

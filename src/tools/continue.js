@@ -84,8 +84,8 @@ function writeYamlConfig(apiKey, baseUrl, models) {
 }
 
 const HS_MODELS = [
-  { name: 'HolySheep — Claude Sonnet', model: 'claude-sonnet-4-5' },
-  { name: 'HolySheep — Claude Opus',   model: 'claude-opus-4-5'   },
+  { name: 'HolySheep — Claude Sonnet', model: 'claude-sonnet-4-6' },
+  { name: 'HolySheep — Claude Opus',   model: 'claude-opus-4-6'   },
 ]
 
 module.exports = {
