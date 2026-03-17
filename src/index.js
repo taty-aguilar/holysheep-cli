@@ -125,6 +125,16 @@ program
     await require('./commands/reset')(opts)
   })
 
+// ── upgrade ──────────────────────────────────────────────────────────────────
+program
+  .command('upgrade')
+  .alias('update')
+  .description('升级 Claude Code / Codex / Gemini CLI 到最新版本')
+  .action(async () => {
+    printBanner()
+    await require('./commands/upgrade')()
+  })
+
 // ── tools ────────────────────────────────────────────────────────────────────
 program
   .command('tools')
@@ -155,6 +165,7 @@ program
     console.log(`  ${chalk.bold('hs whoami')}   查看当前登录状态`)
     console.log(`  ${chalk.bold('hs doctor')}   检查配置状态`)
     console.log(`  ${chalk.bold('hs balance')}  查看账户余额`)
+    console.log(`  ${chalk.bold('hs upgrade')}  升级 Claude Code / Codex / Gemini CLI`)
     console.log(`  ${chalk.bold('hs tools')}    查看支持的工具列表`)
     console.log()
     console.log(chalk.gray(`注册账号: https://holysheep.ai`))
